@@ -1,15 +1,113 @@
  
-   var _funcion, jqTblPD = $("#tblPD"),tabla={};
+   var _funcion, jqTblPD = $("#tblPD"),tabla={},opt_table={},jqIdjob;
+
+ 		function LoadTable(dataSource)
+		{
+	tabla.clear();
+    tabla.rows.add(dataSource);
+    tabla.draw();
+
+		var modalConfirm = function(callback){
+ 
+
+  $("#modal-btn-si").on("click", function(){
+    callback(true);
+    $("#modalconfirm").modal('hide');
+  });
+  
+  $("#modal-btn-no").on("click", function(){
+    callback(false);
+    $("#modalconfirm").modal('hide');
+  });
+};
+
+modalConfirm(function(confirm){
+  if(confirm){
+	  call_borrar(jqIdjob);
+	
+//$(".alert-danger").removeCLASS("hide");
+     console.log("confirmado el borrado");
+  }else{
+    console.log("negado el borrado");
+  }
+});	
+		
+$("#tblPD tbody").on("click",".borrar", function () {
+
+	var tr = $(this).closest('tr');
+	var row = tabla.row( tr );
+	datos=row.data();
+	console.log("datos",datos);
+	jqIdjob=datos.id_trabajo;	
+
+	$("#modalconfirm").find("#messageJob").html("Seguro deseas eliminar la tarea "+jqIdjob);
+	$("#modalconfirm").modal('show');
+});
+
+
+		
+		}
+
+function call_procesar(){
+	var url="procesar_datos.php";
+
+	$.ajax({
+		type:"post",
+		url:url,
+		data:{_funcion:"3"},
+		success:function(datos){
+			//$("#mostrardatos").html(datos);
+
+			data = JSON.parse(datos);
+			var dataSource=[];
+			$.each(data, function( index, value ) {
+  console.log( index , ": " , value );
+         if(value.order_id>0)
+		dataSource.push({id_order:value.order_id,id_usuario:value.user_id,id_equipo:value.team_id,id_trabajo:value.job_id,direccion:value.job_pickup_address,fecha:value.job_pickup_datetime,estado:value.job_status,entrega:value.job_delivery_datetime,tiempo_de_creacion:value.creation_datetime});
+});
+	 
+	
+    LoadTable(dataSource);
+	        console.log('data0', data.length);
+		}
+	});
+}
+
+function call_borrar(Id){
+	var url="procesar_datos.php";
+
+	$.ajax({
+		type:"post",
+		url:url,
+		data:{_funcion:"4",jobId:Id},
+		success:function(datos){
+			//$("#mostrardatos").html(datos);
+			
+			data = JSON.parse(datos);
+			$(".alert-success .message").html('&nbsp;'+data.res_delete_task.message);
+			$(".alert-success").removeClass("hide");
+			$("html, body").animate({ scrollTop: 0 }, "slow");
+			var dataSource=[];
+			$.each(data.all_tasks, function( index, value ) {
+  console.log( index , ": " , value );
+         if(value.order_id>0)
+		dataSource.push({id_order:value.order_id,id_usuario:value.user_id,id_equipo:value.team_id,id_trabajo:value.job_id,direccion:value.job_address,fecha:value.job_pickup_datetime,estado:value.job_status,entrega:value.job_delivery_datetime,tiempo_de_creacion:value.creation_datetime});
+});
+	 
+	
+    LoadTable(dataSource);
+	        console.log('data0', data.length);
+		}
+	});
+}
 
 $(document).ready(function () {
-		
-	var dataSource = [  
-        { id_usuario: '001', id_equipo: '745',id_trabajo:"8676", direccion:"esquina1", fecha: "12/12/2020", estado:"ACTIVO", entrega:"listo", tiempo_de_creacion:"1",acciones:'<a id="borrar" class="btn btn-danger mb-2 borrar">Borrar</a>'},  
-        { id_usuario: '002', id_equipo: '746',id_trabajo:"8677", direccion:"esquina1", fecha: "13/12/2020", estado:"ACTIVO", entrega:"pendiente", tiempo_de_creacion:"2",acciones:'<a id="borrar" class="btn btn-danger mb-2 borrar">Borrar</a>'}  
-     ]; 
-		tabla=jqTblPD.DataTable( {
-	        data : dataSource,
+ 
+ 
+	 var opt_table={
+	        data : [],
 	        columns : [
+	            { title : "Id Orden", data : "id_order", class : 'text-center'},
 	            { title : "Id Usuario", data : "id_usuario", class : 'text-center'},
 	            { title : "Id Equipo", data : "id_equipo", class : 'text-center'},
 	            { title : "Id Trabajo", data : "id_trabajo", class : 'text-center'},
@@ -38,72 +136,29 @@ $(document).ready(function () {
 	            { title : "Notificacion", data : "action", class : 'text-center' },
 	            { title : "Tags", data : "action", class : 'text-center' },
 	            { title : "Geo referencia", data : "action", class : 'text-center' } */
-	        ]
-	    });
-				
-				
-$("#tblPD tbody").on("click","#borrar", function () {
-	
-	var row = $(this);
-
-if (row.parent().parent().hasClass("DTFC_Cloned")) {
- 
-} else {
-	
-var rowIndex = row.index() + 1;
-var tr = $(this).closest("tr");
-		var rowindex = tr.index();
-		datos= tabla.row(rowindex).data();	
-console.log(datos);		
-}});				
-
-
-var modalConfirm = function(callback){
-  
-  $(".borrar").on("click", function(){
-    $("#modalconfirm").modal('show');
-  });
-
-  $("#modal-btn-si").on("click", function(){
-    callback(true);
-    $("#modalconfirm").modal('hide');
-  });
-  
-  $("#modal-btn-no").on("click", function(){
-    callback(false);
-    $("#modalconfirm").modal('hide');
-  });
-};
-
-modalConfirm(function(confirm){
-  if(confirm){
-	  $(".alert-success .message").html('&nbsp;Borrado confirmado ');
-	  $(".alert-success").removeClass("hide");
-	  $("html, body").animate({ scrollTop: 0 }, "slow");
-//$(".alert-danger").removeCLASS("hide");
-     console.log("confirmado el borrado");
-  }else{
-    console.log("negado el borrado");
-  }
-});
-
-function call_procesar(){
-	var url="procesar_datos.php";
-
-	$.ajax({
-		type:"post",
-		url:url,
-		data:{_funcion:"3"},
-		success:function(datos){
-			//$("#mostrardatos").html(datos);
-
-			data = JSON.parse(datos);
-	        console.log('data0', data.length);
-		}
-	});
+	        ],
+			"columnDefs":
+[
+{
+"data": null,
+"defaultContent": '<a id="borrar" class="btn btn-danger mb-2 borrar">Borrar</a>',
+"targets": -1
 }
+]
+	    };
+		tabla=jqTblPD.DataTable( opt_table);
+				
+				
+			
+
 
 	call_procesar();
+
+  $('.btn').on('click', function() {
+    var $this = $(this);
+  $('.btn').html('saving').focus();
+ 
+});
 });
 
 
@@ -127,7 +182,7 @@ function enviar_datos_ajax(){
 	var hd=$('#has_delivery').val();
 	var lt=$('#layout_type').val();
 	var tl=$('#tracking_link').val();
-	var t=$('#timezone').val();
+	var tz=$('#timezone').val();
 	var fi=$('#fleet_id').val();
 	var pri=$('#p_ref_images').val();
 	var n=$('#notify').val()
@@ -135,13 +190,13 @@ function enviar_datos_ajax(){
 	var g=$('#geofence').val();
 
 	var url="procesar_datos.php";
-
+       if(oi>0){
 	$.ajax({
 		type:"post",
 		url:url,
 		data:{order:oi, descripction:jd, pickup_phone:jpp, pickup_name:jpn, pickup_email:jpe, pickup_adress:jpa, 
 				pickup_latitude:jpl, longitud:l, pickup_datetime:jpd, custom_field_template:pcft, price:pmt_price,quanty:pmt_quanty,
-				team_id:ti, assignment:aa, pickup:hp, delivery:hd, layout_type:lt, tracking_link:tl, timezone:t,
+				team_id:ti, assignment:aa, pickup:hp, delivery:hd, layout_type:lt, tracking_link:tl, timezone:tz,
 				fleet_id:fi, p_ref_images:pri, notify:n, tags:t, geofence:g, _funcion:"1"},
 		success:function(datos){
 			//$("#mostrardatos").html(datos);
@@ -150,18 +205,23 @@ function enviar_datos_ajax(){
 	        //console.log('data', data.length);
 			if(data.job_id>0)
 			{
-			 $(".alert-success .message").html('&nbsp;Task creada ');
+			 $(".alert-success .message").html('&nbsp;Task creada '+data.job_id);
 		   $(".alert-success").removeClass("hide");
+		   call_procesar();
 		    }
 		    else
 			{
-				$(".alert-danger .message").html('&nbsp;Task no creada ');	
-				$(".alert-success").addClass("hide");
+			$(".alert-danger .message").html('&nbsp;Task no creada ');	
+			$(".alert-success").addClass("hide");
+		     
 			}
 			$("html, body").animate({ scrollTop: 0 }, "slow");
+			$('.btn').button('reset');
            if(data.length != 0){
 	      console.log('test entro');
 
+           	
+           
            }else{
            		console.log('test no entro');
            		 
@@ -170,5 +230,15 @@ function enviar_datos_ajax(){
            }
 		}
 	});
+	   }
+	   else
+	   {
+		   $(".alert-danger .message").html('&nbsp;order requerida ');	
+			$(".alert-danger").removeClass("hide");
+			$(".alert-success").addClass("hide");
+			$('.btn').button('reset');
+			$("html, body").animate({ scrollTop: 0 }, "slow");
+		   
+	   }
 
 }

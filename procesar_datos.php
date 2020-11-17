@@ -70,30 +70,33 @@ $meta_data[]=array("label"=>"Price","data"=>$price);
 $meta_data[]=array("label"=>"Quantity","data"=>$quanty);
 
 $request_fields=array("api_key"=>API_TOKEN, 
-"order_id"=>$_POST['order'],
-"job_description"=>"monkey_dance5 delivery",
-"job_pickup_phone"=>"+50582789913",
-"job_pickup_name"=>"almacen principal",
-"job_pickup_email"=>"",
-"job_pickup_address"=>"NORTH EAST 25",
-"job_pickup_latitude"=>"30.7188978",
-"job_pickup_longitude"=>"76.810296",
-"job_pickup_datetime"=>"2020-11-16 23:17:00",
-"pickup_custom_field_template"=>"Template_1",
-"pickup_meta_data"=> json_encode($meta_data),
-"team_id"=>"",
-"auto_assignment"=>"0",
-"has_pickup"=>"1",
-"has_delivery"=>"0",
-"layout_type"=>"0",
-"tracking_link"=>1,
-"timezone"=>"300",
-"fleet_id"=>"",
-"p_ref_images"=> null,
-"notify"=>1,
-"tags"=>"",
-"geofence"=>0
-);
+  "order_id"=>"$order",
+  "job_description"=> "$descripction",
+  "job_pickup_phone"=>$pickup_phone,
+	"job_pickup_name"=>$pickup_name,
+	"job_pickup_email"=>$pickup_email,
+	"job_pickup_address"=>$pickup_adress,
+	"job_pickup_latitude"=>$pickup_latitude,
+	"job_pickup_longitude"=>$longitud,
+	"job_pickup_datetime"=>$pickup_datetime,
+	"pickup_custom_field_template"=>$custom_field_template,
+    "pickup_meta_data"=>json_encode($meta_data),
+	"team_id"=>$team_id,
+	"auto_assignment"=>$assignment,
+	"has_pickup"=>$pickup,
+	"has_delivery"=>$delivery,
+	"layout_type"=>$layout_type,
+  "tracking_link"=> $tracking_link,
+  "timezone"=> "$timezone",
+  "fleet_id"=> "$fleet_id",
+  "p_ref_images"=> array("$p_ref_images"),
+  "notify"=> "$notify",
+  "tags"=> "$tags",
+  "geofence"=> "$geofence");
+
+
+
+
 $result=ConsumeApi("create_task",$request_fields);
 
 return $result->data;
@@ -114,6 +117,19 @@ function assign_task()
 	//print_r($result);
 
 	return $result->data;
+}
+
+function delete_task($job_id)
+{
+	//consumiendo--> /delete_task
+	$request_fields=array("api_key"=>API_TOKEN, 
+		"job_id"=>"$job_id"
+	);
+	//comsumimos delete_task
+	$result=ConsumeApi("delete_task",$request_fields);
+	//print_r($result);
+
+	return $result;
 }
 
 function find_region_from_points()
@@ -152,4 +168,12 @@ else if($_funcion==2)
 	//comsumimos get_all_tasks
 	$all_tasks=get_all_tasks();
 	echo json_encode($all_tasks);
+}else if($_funcion==4)
+{
+	//comsumimos get_all_tasks
+	$res_delete_task=delete_task($jobId);
+	$all_tasks=get_all_tasks();
+	$res['res_delete_task']=$res_delete_task;
+	$res['all_tasks']=$all_tasks;
+	echo json_encode($res);
 }
